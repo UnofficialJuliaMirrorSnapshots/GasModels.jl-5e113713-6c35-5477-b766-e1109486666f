@@ -40,6 +40,24 @@ end
     # end
 end
 
+
+#Check the MIP model
+@testset "test mip gf" begin
+    @testset "gaslib 40 case" begin
+        println("Testing gaslib 40 mip gf")
+        result = run_gf("../test/data/gaslib-40.json", MIPGasModel, cvx_minlp_solver)
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test isapprox(result["objective"], 0; atol = 1e-6)
+    end
+    @testset "gaslib 135 case" begin
+        println("Testing gaslib 135 mip gf")
+        result = run_gf("../test/data/gaslib-135.json", MIPGasModel, cvx_minlp_solver)
+        @test result["status"] == :LocalOptimal || result["status"] == :Optimal
+        @test isapprox(result["objective"], 0; atol = 1e-6)
+     end
+end
+
+
 @testset "test minlp gf mathematical program" begin
     data = GasModels.parse_file("../test/data/gaslib-582.json")
     gm = GasModels.build_generic_model(data, MINLPGasModel, GasModels.post_gf)
@@ -53,7 +71,7 @@ end
     ref = gm.con[:nw][gm.cnw][:junction_mass_flow_balance][100]
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
     @test isapprox(set.value, 0.64266/data["baseQ"]; atol = 1e-4)
     @test isa(set, MOI.EqualTo{Float64})
@@ -65,7 +83,7 @@ end
     ref = gm.con[:nw][gm.cnw][:junction_mass_flow_balance][306]
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
     @test isapprox(set.value, 0.0; atol = 1e-4)
     @test isa(set, MOI.EqualTo{Float64})
@@ -76,12 +94,12 @@ end
     @test isapprox(func.terms[var_ref], -1.0; atol = 1e-4)
     var_ref = gm.var[:nw][gm.cnw][:f][78]
     @test isapprox(func.terms[var_ref], 1.0; atol = 1e-4)
-    
+
     # -f[360] - f[269] == -526
     ref = gm.con[:nw][gm.cnw][:junction_mass_flow_balance][26]
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
     @test isapprox(set.value, -526.0/data["baseQ"]; atol = 1e-4)
     @test isa(set, MOI.EqualTo{Float64})
@@ -91,12 +109,12 @@ end
     @test isapprox(func.terms[var_ref], -1.0; atol = 1e-4)
     var_ref = gm.var[:nw][gm.cnw][:f][269]
     @test isapprox(func.terms[var_ref], -1.0; atol = 1e-4)
-    
+
     # "yp[360] + yp[269] >= 1"
     ref = gm.con[:nw][gm.cnw][:source_flow][26]
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
     @test isapprox(set.lower, 1.0; atol = 1e-4)
     @test isa(set, MOI.GreaterThan{Float64})
@@ -111,12 +129,12 @@ end
     ref = gm.con[:nw][gm.cnw][:sink_flow][112]
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
     @test isapprox(set.lower, 1.0; atol = 1e-4)
     @test isa(set, MOI.GreaterThan{Float64})
     @test length(func.terms) == 1
-    
+
     var_ref = gm.var[:nw][gm.cnw][:yp][483]
     @test isapprox(func.terms[var_ref], 1.0; atol = 1e-4)
 
@@ -125,7 +143,7 @@ end
     ref = gm.con[:nw][gm.cnw][:sink_flow][32]
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
     @test isapprox(set.lower, 1.0; atol = 1e-4)
     @test isa(set, MOI.GreaterThan{Float64})
@@ -140,7 +158,7 @@ end
     ref = gm.con[:nw][gm.cnw][:conserve_flow2][523]
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.value, 0.0; atol = 1e-4)
@@ -156,7 +174,7 @@ end
     ref = gm.con[:nw][gm.cnw][:conserve_flow2][496]
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.value, 0.0; atol = 1e-4)
@@ -172,7 +190,7 @@ end
     ref = gm.con[:nw][gm.cnw][:conserve_flow1][305]
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.value, 0.0; atol = 1e-4)
@@ -188,7 +206,7 @@ end
     ref = gm.con[:nw][gm.cnw][:flow_direction_choice][178]
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.value, 1.0; atol = 1e-4)
@@ -208,7 +226,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 0.34408340524232955; atol = 1e-4)
@@ -217,8 +235,8 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
-        
+    end
+
 
     ref = gm.con[:nw][gm.cnw][:on_off_pressure_drop1][161]
     var_ref = [gm.var[:nw][gm.cnw][:yp][161], gm.var[:nw][gm.cnw][:p][503], gm.var[:nw][gm.cnw][:p][415]]
@@ -226,7 +244,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 0.34408340524232955; atol = 1e-4)
@@ -235,7 +253,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     # 0.12220764306078952 yp[186] - f[186] <= 0.12220764306078952
     # f[186] + 0.12220764306078952 yn[186] <= 0.12220764306078952
@@ -245,7 +263,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 0.12220764306078952; atol = 1e-4)
@@ -254,7 +272,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     ref = gm.con[:nw][gm.cnw][:on_off_pipe_flow2][186]
     var_ref = [gm.var[:nw][gm.cnw][:yn][186], gm.var[:nw][gm.cnw][:f][186]]
@@ -262,7 +280,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 0.12220764306078952; atol = 1e-4)
@@ -271,7 +289,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     # "3.390221630328586 * (p[498] - p[129]) - (f[222] ^ 2.0 - (1.0 - yp[222]) * 1.0 ^ 2.0) >= 0"
     # "3.390221630328586 * (p[498] - p[129]) - (f[222] ^ 2.0 + (1.0 - yp[222]) * 1.0 ^ 2.0) <= 0"
@@ -282,25 +300,25 @@ end
     @test JuMP._sense(c) == :>=
     @test isapprox(c.lb, 0.0; atol = 1e-4)
     @test length(c.terms.nd) == 17
-    
+
     ref = gm.con[:nw][gm.cnw][:weymouth2][222]
     c = gm.model.nlp_data.nlconstr[ref.index.value]
     @test JuMP._sense(c) == :<=
     @test isapprox(c.ub, 0.0; atol = 1e-4)
     @test length(c.terms.nd) == 17
-    
+
     ref = gm.con[:nw][gm.cnw][:weymouth4][222]
     c = gm.model.nlp_data.nlconstr[ref.index.value]
     @test JuMP._sense(c) == :<=
     @test isapprox(c.ub, 0.0; atol = 1e-4)
     @test length(c.terms.nd) == 17
-    
+
     ref = gm.con[:nw][gm.cnw][:weymouth3][222]
     c = gm.model.nlp_data.nlconstr[ref.index.value]
     @test JuMP._sense(c) == :>=
     @test isapprox(c.lb, 0.0; atol = 1e-4)
     @test length(c.terms.nd) == 17
-    
+
     # p[302] - p[83] == 0
     ref = gm.con[:nw][gm.cnw][:short_pipe_pressure_drop][423]
     var_ref = [gm.var[:nw][gm.cnw][:p][302], gm.var[:nw][gm.cnw][:p][83]]
@@ -308,7 +326,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.value, 0.0; atol = 1e-4)
@@ -317,7 +335,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     # yp[321] - f[321] <= 1.0
     # f[321] + yn[321] <= 1.0
@@ -327,7 +345,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 1.0; atol = 1e-4)
@@ -336,7 +354,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     ref = gm.con[:nw][gm.cnw][:on_off_short_pipe_flow2][321]
     var_ref = [gm.var[:nw][gm.cnw][:yn][321], gm.var[:nw][gm.cnw][:f][321]]
@@ -344,7 +362,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 1.0; atol = 1e-4)
@@ -353,8 +371,8 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
-    
+    end
+
 
     # yp[549] - f[549] <= 1.0
     # f[549] + yn[549] <= 1.0
@@ -364,7 +382,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 1.0; atol = 1e-4)
@@ -373,7 +391,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
 
     ref = gm.con[:nw][gm.cnw][:on_off_compressor_flow_direction2][549]
@@ -382,7 +400,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 1.0; atol = 1e-4)
@@ -391,7 +409,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     # p[2200560] - p[560] + 0.4831288389273021 yn[551] <= 0.4831288389273021
     # p[2200560] - 25 p[560] + 0.4831288389273021 yp[551] <= 0.4831288389273021
@@ -403,7 +421,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 0.4831288389273021; atol = 1e-4)
@@ -412,7 +430,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     ref = gm.con[:nw][gm.cnw][:on_off_compressor_ratios1][551]
     var_ref = [gm.var[:nw][gm.cnw][:p][2200560], gm.var[:nw][gm.cnw][:p][560], gm.var[:nw][gm.cnw][:yp][551]]
@@ -420,7 +438,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 0.4831288389273021; atol = 1e-4)
@@ -429,7 +447,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     ref = gm.con[:nw][gm.cnw][:on_off_compressor_ratios3][551]
     var_ref = [gm.var[:nw][gm.cnw][:p][560], gm.var[:nw][gm.cnw][:p][2200560], gm.var[:nw][gm.cnw][:yn][551]]
@@ -437,7 +455,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 0.34436018196723495; atol = 1e-4)
@@ -446,7 +464,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
 
     ref = gm.con[:nw][gm.cnw][:on_off_compressor_ratios2][551]
@@ -455,7 +473,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 0.34436018196723495; atol = 1e-4)
@@ -464,7 +482,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     # f[558] + yn[558] <= 1.0
     # yp[558] - f[558] <= 1.0
@@ -476,7 +494,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 1.0; atol = 1e-4)
@@ -485,7 +503,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     ref = gm.con[:nw][gm.cnw][:on_off_valve_flow_direction1][558]
     var_ref = [gm.var[:nw][gm.cnw][:f][558], gm.var[:nw][gm.cnw][:yp][558]]
@@ -493,7 +511,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 1.0; atol = 1e-4)
@@ -502,7 +520,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     ref = gm.con[:nw][gm.cnw][:on_off_valve_flow_direction3][558]
     var_ref = [gm.var[:nw][gm.cnw][:f][558], gm.var[:nw][gm.cnw][:v][558]]
@@ -510,7 +528,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 0.0; atol = 1e-4)
@@ -519,7 +537,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     ref = gm.con[:nw][gm.cnw][:on_off_valve_flow_direction4][558]
     var_ref = [gm.var[:nw][gm.cnw][:f][558], gm.var[:nw][gm.cnw][:v][558]]
@@ -527,7 +545,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 0.0; atol = 1e-4)
@@ -536,17 +554,17 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     # - p[164] + 0.50520177292419455 v[571] + p[170] <= 0.5052017729241945
     # - p[170] + p[164] + 0.5052017729241945 v[571] <= 0.5052017729241945
-    ref = gm.con[:nw][gm.cnw][:on_off_valve_pressure_drop2][571]
+    ref = gm.con[:nw][gm.cnw][:valve_pressure_drop2][571]
     var_ref = [gm.var[:nw][gm.cnw][:p][164], gm.var[:nw][gm.cnw][:v][571], gm.var[:nw][gm.cnw][:p][170]]
     coeff = [-1.0, 0.5052017729241945, 1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 0.5052017729241945; atol = 1e-4)
@@ -555,15 +573,15 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
-    ref = gm.con[:nw][gm.cnw][:on_off_valve_pressure_drop1][571]
+    ref = gm.con[:nw][gm.cnw][:valve_pressure_drop1][571]
     var_ref = [gm.var[:nw][gm.cnw][:p][164], gm.var[:nw][gm.cnw][:v][571], gm.var[:nw][gm.cnw][:p][170]]
     coeff = [1.0, 0.5052017729241945, -1.0]
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 0.5052017729241945; atol = 1e-4)
@@ -572,7 +590,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     # f[591] - v[591] <= 0.0
     # yp[591] - f[591] <= 1.0
@@ -584,7 +602,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 0.0; atol = 1e-4)
@@ -593,7 +611,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     ref = gm.con[:nw][gm.cnw][:on_off_control_valve_flow_direction1][591]
     var_ref = [gm.var[:nw][gm.cnw][:yp][591], gm.var[:nw][gm.cnw][:f][591]]
@@ -601,7 +619,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 1.0; atol = 1e-4)
@@ -610,7 +628,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     ref = gm.con[:nw][gm.cnw][:on_off_control_valve_flow_direction2][591]
     var_ref = [gm.var[:nw][gm.cnw][:yn][591], gm.var[:nw][gm.cnw][:f][591]]
@@ -618,7 +636,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 1.0; atol = 1e-4)
@@ -627,7 +645,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     ref = gm.con[:nw][gm.cnw][:on_off_control_valve_flow_direction3][591]
     var_ref = [gm.var[:nw][gm.cnw][:v][591], gm.var[:nw][gm.cnw][:f][591]]
@@ -635,7 +653,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 0.0; atol = 1e-4)
@@ -644,7 +662,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     # 0_p[2600217] - 0_p[217] + 0.505201772924194 0_yp[585] + 0.505201772924194 0_v[585] <= 1.010403545848389
     # - p[2600217] + 0.505201772924194 yp[585]   + 0.505201772924194 v[585]   <= 1.010403545848389
@@ -656,7 +674,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 1.010403545848389; atol = 1e-4)
@@ -665,7 +683,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     ref = gm.con[:nw][gm.cnw][:on_off_control_valve_pressure_drop4][585]
     var_ref = [gm.var[:nw][gm.cnw][:p][217], gm.var[:nw][gm.cnw][:p][2600217], gm.var[:nw][gm.cnw][:yn][585], gm.var[:nw][gm.cnw][:v][585]]
@@ -673,7 +691,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 1.010403545848389; atol = 1e-4)
@@ -682,7 +700,7 @@ end
 
     for i in 1:length(var_ref)
         @test isapprox(func.terms[var_ref[i]], coeff[i]; atol = 1e-4)
-    end 
+    end
 
     ref = gm.con[:nw][gm.cnw][:on_off_control_valve_pressure_drop1][585]
     var_ref = [gm.var[:nw][gm.cnw][:p][217], gm.var[:nw][gm.cnw][:p][2600217], gm.var[:nw][gm.cnw][:yp][585], gm.var[:nw][gm.cnw][:v][585]]
@@ -690,7 +708,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 1.010403545848389; atol = 1e-4)
@@ -707,7 +725,7 @@ end
 
     constraint_ref = JuMP.constraint_ref_with_index(gm.model, ref.index)
     constraint = JuMP.constraint_object(constraint_ref)
-    func = constraint.func 
+    func = constraint.func
     set = constraint.set
 
     @test isapprox(set.upper, 1.010403545848389; atol = 1e-4)
