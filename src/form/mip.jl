@@ -18,17 +18,6 @@ MIPGasModel(data::Dict{String,Any}; kwargs...) = GenericGasModel(data, StandardM
 ### Variables
 #################################################################################################
 
-function variable_connection_direction(gm::GenericGasModel{T}, n::Int=gm.cnw; connection=gm.ref[:nw][n][:connection]) where T <: AbstractMIPForm
-    "dummy integer variable in case we need it"
-    gm.var[:nw][n][:yp] = @variable(gm.model, [l in [0]], binary=true, base_name="$(n)_yp")
-end
-
-function variable_connection_direction_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; ne_connection=gm.ref[:nw][n][:ne_connection]) where T <: AbstractMIPForm
-end
-
-function variable_pressure_sqr(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool = true) where T <: AbstractMIPForm
-end
-
 ######################################################################################################
 ## Constraints
 ######################################################################################################
@@ -39,12 +28,12 @@ function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_
 end
 
 "Constraint: Weymouth equation with one way direction--not applicable for MIP models"
-function constraint_weymouth_one_way(gm::GenericGasModel{T}, n::Int, k, i, j, w, yp, yn) where T <: AbstractMIPForm
+function constraint_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, w, yp, yn) where T <: AbstractMIPForm
     #TODO we could think about putting a polyhendra around the weymouth
 end
 
 " Constraint: constraints on pressure drop across where direction is constrained"
-function constraint_pressure_drop_one_way(gm::GenericGasModel{T}, n::Int, k, i, j, yp, yn) where T <: AbstractMIPForm
+function constraint_pressure_drop_directed(gm::GenericGasModel{T}, n::Int, k, i, j, yp, yn) where T <: AbstractMIPForm
 end
 
 " Constraint: Constraint on pressure drop across a short pipe--not applicable for MIP models"
@@ -56,7 +45,7 @@ function constraint_compressor_ratios(gm::GenericGasModel{T}, n::Int, k, i, j, m
 end
 
 " Constraint: Compressor ratio when the flow direction is constrained--not applicable for MIP models"
-function constraint_compressor_ratios_one_way(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, yp, yn) where T <: AbstractMIPForm
+function constraint_compressor_ratios_directed(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, yp, yn) where T <: AbstractMIPForm
 end
 
 " Constraint: Constraints on pressure drop across valves where the valve can open or close--not applicable for MIP models"
@@ -68,7 +57,7 @@ function constraint_control_valve_pressure_drop(gm::GenericGasModel{T}, n::Int, 
 end
 
 " Constraint: Pressure drop across a control valves when directions is constrained--not applicable for MIP models"
-function constraint_control_valve_pressure_drop_one_way(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn) where T <: AbstractMIPForm
+function constraint_control_valve_pressure_drop_directed(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, i_pmax, j_pmax, yp, yn) where T <: AbstractMIPForm
 end
 
 "Constraint: Weymouth equation--not applicable for MIP models--not applicable for MIP models"
@@ -76,11 +65,11 @@ function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf,
 end
 
 " Constraint: Pressure drop across an expansion pipe when direction is constrained--not applicable for MIP models"
-function constraint_pressure_drop_ne_one_way(gm::GenericGasModel{T}, n::Int, k, i, j, yp, yn) where T <: AbstractMIPForm
+function constraint_pressure_drop_ne_directed(gm::GenericGasModel{T}, n::Int, k, i, j, yp, yn) where T <: AbstractMIPForm
 end
 
 "Constraint: Weymouth equation--not applicable for MIP models--not applicable for MIP models"
-function constraint_weymouth_ne_one_way(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, yp, yn) where T <: AbstractMIPForm
+function constraint_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, yp, yn) where T <: AbstractMIPForm
 end
 
 "Constraint: compressor ratios on a new compressor--not applicable for MIP models-not applicable for MIP models"
@@ -88,5 +77,5 @@ function constraint_compressor_ratios_ne(gm::GenericGasModel{T}, n::Int, k, i, j
 end
 
 " Constraint: Pressure drop across an expansion compressor when direction is constrained-not applicable for MIP models"
-function constraint_compressor_ratios_ne_one_way(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax, yp, yn) where T <: AbstractMIPForm
+function constraint_compressor_ratios_ne_directed(gm::GenericGasModel{T}, n::Int, k, i, j, min_ratio, max_ratio, mf, j_pmax, i_pmin, i_pmax, yp, yn) where T <: AbstractMIPForm
 end
