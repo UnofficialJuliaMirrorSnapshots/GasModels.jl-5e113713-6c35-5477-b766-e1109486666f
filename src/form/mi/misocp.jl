@@ -24,7 +24,7 @@ function variable_mass_flow(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::Bool
     end
 
     for (i,pipe) in ref(gm,n,:resistor)
-        resistance[i] = ref(gm, n, :w)[i] 
+        resistance[i] = ref(gm, n, :w)[i]
     end
 
     if bounded
@@ -55,19 +55,17 @@ function variable_mass_flow_ne(gm::GenericGasModel{T}, n::Int=gm.cnw; bounded::B
 end
 
 " Weymouth equation for an undirected pipe "
-function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, mf, w, pd_min, pd_max) where T <: AbstractMISOCPForm
-    yp = var(gm,n,:yp,k)
-    yn = var(gm,n,:yn,k)
-
+function constraint_weymouth(gm::GenericGasModel{T}, n::Int, k, i, j, f_min, f_max, w, pd_min, pd_max) where T <: AbstractMISOCPForm
+    y = var(gm,n,:y,k)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     l  = var(gm,n,:l,k)
     f  = var(gm,n,:f,k)
 
-   add_constraint(gm, n, :weymouth1, k, @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1)))
-   add_constraint(gm, n, :weymouth2, k, @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1)))
-   add_constraint(gm, n, :weymouth3, k, @constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1)))
-   add_constraint(gm, n, :weymouth4, k, @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1)))
+   add_constraint(gm, n, :weymouth1, k, @constraint(gm.model, l >= pj - pi + pd_min*(2*y)))
+   add_constraint(gm, n, :weymouth2, k, @constraint(gm.model, l >= pi - pj + pd_max*(2*y-2)))
+   add_constraint(gm, n, :weymouth3, k, @constraint(gm.model, l <= pj - pi + pd_max*(2*y)))
+   add_constraint(gm, n, :weymouth4, k, @constraint(gm.model, l <= pi - pj + pd_min*(2*y-2)))
    add_constraint(gm, n, :weymouth5, k, @constraint(gm.model, w*l >= f^2))
 end
 
@@ -83,25 +81,23 @@ function constraint_weymouth_directed(gm::GenericGasModel{T}, n::Int, k, i, j, w
 end
 
 "Weymouth equation for an undirected expansion pipe"
-function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, pd_min, pd_max) where T <: AbstractMISOCPForm
-    yp = var(gm,n,:yp_ne,k)
-    yn = var(gm,n,:yn_ne,k)
-
+function constraint_weymouth_ne(gm::GenericGasModel{T},  n::Int, k, i, j, w, f_min, f_max, pd_min, pd_max) where T <: AbstractMISOCPForm
+    y = var(gm,n,:y_ne,k)
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     zp = var(gm,n,:zp,k)
     l  = var(gm,n,:l_ne,k)
     f  = var(gm,n,:f_ne,k)
 
-    add_constraint(gm, n, :weymouth_ne1, k,  @constraint(gm.model, l >= pj - pi + pd_min*(yp - yn + 1)))
-    add_constraint(gm, n, :weymouth_ne2, k,  @constraint(gm.model, l >= pi - pj + pd_max*(yp - yn - 1)))
-    add_constraint(gm, n, :weymouth_ne3, k,  @constraint(gm.model, l <= pj - pi + pd_max*(yp - yn + 1)))
-    add_constraint(gm, n, :weymouth_ne4, k,  @constraint(gm.model, l <= pi - pj + pd_min*(yp - yn - 1)))
+    add_constraint(gm, n, :weymouth_ne1, k,  @constraint(gm.model, l >= pj - pi + pd_min*(2*y)))
+    add_constraint(gm, n, :weymouth_ne2, k,  @constraint(gm.model, l >= pi - pj + pd_max*(2*y-2)))
+    add_constraint(gm, n, :weymouth_ne3, k,  @constraint(gm.model, l <= pj - pi + pd_max*(2*y)))
+    add_constraint(gm, n, :weymouth_ne4, k,  @constraint(gm.model, l <= pi - pj + pd_min*(2*y-2)))
     add_constraint(gm, n, :weymouth_ne5, k,  @constraint(gm.model, zp*w*l >= f^2))
 end
 
 "Weymouth equation for expansion pipes with undirected expansion pipes"
-function constraint_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k, i, j, w, mf, direction) where T <:  AbstractMISOCPForm
+function constraint_weymouth_ne_directed(gm::GenericGasModel{T},  n::Int, k, i, j, w, pd_min, pd_max, direction) where T <:  AbstractMISOCPForm
     pi = var(gm,n,:p,i)
     pj = var(gm,n,:p,j)
     zp = var(gm,n,:zp,k)
