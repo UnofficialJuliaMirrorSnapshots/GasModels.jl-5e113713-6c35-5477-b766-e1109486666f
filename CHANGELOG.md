@@ -2,8 +2,13 @@ GasModels.jl Change Log
 =======================
 
 ### Pending
+- Refactor to make code style / conventions consistent with Infrastructure Models ecosystem (#136) (breaking)
 - Implement constraints on compressor power
 - Implement a multi-network test
+
+### Staged
+- removed requirement that all edges must have unique ids (breaking)
+- introduced optimal gas flow formulation (ogf)
 
 ### v0.5
 - Renamed various function names for consistency (breaking)
